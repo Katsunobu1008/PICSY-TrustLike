@@ -45,3 +45,38 @@ else:
             print(
                 f"  - {USER_NAMES[i]} の行 (インデックス {i}) の和: {row_sum:.8f} (1との差: {abs(row_sum - 1.0):.2e})")
 print("-" * 40)
+
+
+def calculate_E_prime(E_matrix, num_users):
+    """
+    評価行列 E から貢献度計算用行列 E' を計算する (仮想中央銀行法)。
+    E' = E - B + (B @ D) / (N - 1)
+
+    Args:
+        E_matrix (np.ndarray): N x N の評価行列。
+        num_users (int): 総ユーザー数 N。
+
+    Returns:
+        np.ndarray: N x N の貢献度計算用行列 E'。
+    """
+    if num_users <= 1:
+        # N-1 でのゼロ除算を避けるためのチェック
+        raise ValueError("ユーザー数は2以上である必要があります。")
+
+    # 1. 予算行列 B の作成
+    #    E_matrix の対角成分 (E_ii) を取り出し、それらを対角に持つ行列 B を作る
+    diagonal_elements_E = np.diag(E_matrix)  # E_matrix の対角成分を1次元配列として取得
+    B = np.diag(diagonal_elements_E)      # 1次元配列を対角行列に変換 (他の要素は0)
+
+    # 2. 分配行列 D の作成
+    #    D は対角成分が0で、非対角成分が1の N x N 行列
+    #    np.eye(num_users) は単位行列 (対角成分が1で他が0)
+    #    np.ones((num_users, num_users)) は全要素が1の行列
+    D = np.ones((num_users, num_users)) - np.eye(num_users)
+
+    # 3. E' の計算 (PICSY資料 式4.62)
+    #    B @ D は行列Bと行列Dの積 (Python 3.5+ の行列積演算子)
+    #    num_users - 1 で割る
+    E_prime_matrix = E_matrix - B + (B @ D) / (num_users - 1)
+
+    return E_prime_matrix
