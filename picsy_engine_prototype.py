@@ -80,3 +80,49 @@ def calculate_E_prime(E_matrix, num_users):
     E_prime_matrix = E_matrix - B + (B @ D) / (num_users - 1)
 
     return E_prime_matrix
+
+
+# --- 2. E から E' への変換 ---
+print("\n[ステップ2: E から E' への変換 (仮想中央銀行法)]")
+
+try:
+    E_prime0 = calculate_E_prime(E, NUM_USERS)  # E0 を E に修正 (上で定義した変数名)
+    print("貢献度計算用行列 E'^(0):")
+    print(E_prime0)
+
+    # E' の検証
+    print(f"E'^(0) の形状: {E_prime0.shape}")
+    diagonal_E_prime0 = np.diag(E_prime0)  # E_prime0の対角成分を取得
+    print(f"E'^(0) の対角成分 (ほぼ0のはず): {diagonal_E_prime0}")
+    row_sums_E_prime0 = np.sum(E_prime0, axis=1)
+    print(f"E'^(0) の各行の和 (ほぼ1のはず): {row_sums_E_prime0}")
+
+    # 前回のシミュレーション結果 E'^(0) (検証用)
+    expected_E_prime0_data = np.array([
+        [0.0000, 0.4333, 0.5667],
+        [0.3182, 0.0000, 0.6818],
+        [0.1571, 0.8429, 0.0000]
+    ])
+
+    # 検証
+    valid_E_prime = True
+    if not np.allclose(E_prime0, expected_E_prime0_data, atol=1e-4):  # 許容誤差を少し設定
+        print("警告: E'^(0) が期待値と異なります。")
+        print("  期待値:")
+        print(expected_E_prime0_data)
+        valid_E_prime = False
+    if not np.allclose(diagonal_E_prime0, 0.0, atol=1e-8):
+        print(f"警告: E'^(0) の対角成分が厳密に0ではありません: {diagonal_E_prime0}")
+        # 実質的に0に近いか確認するために表示
+        valid_E_prime = False
+    if not np.allclose(row_sums_E_prime0, 1.0, rtol=1e-5, atol=1e-8):
+        print(f"警告: E'^(0) の行和が1になっていません: {row_sums_E_prime0}")
+        valid_E_prime = False
+
+    if valid_E_prime:
+        print("検証OK: E'^(0) は期待値と一致し、対角成分はほぼ0、行和はほぼ1です。")
+
+except ValueError as e:
+    print(f"エラー: E' の計算中に問題が発生しました - {e}")
+
+print("-" * 40)
