@@ -29,7 +29,10 @@ class PicsyUser:
 
 
 class PicsyEngine:
-    def __init__(self, user_ids: List[str], user_names: List[str], alpha_like: float, gamma_rate: float):
+    def __init__(self, user_ids: List[str], user_names: List[str], alpha_like: float, gamma_rate: float,
+                 max_iterations: int = 100, tolerance: float = 1e-6):
+
+        # ユーザー数を設定
         self.num_users: int = len(user_ids)
         if self.num_users <= 1:
             raise ValueError("ユーザー数が1以下です。ユーザー数は2以上である必要があります。")
@@ -108,3 +111,13 @@ class PicsyEngine:
             f"  要素の合計 (N={self.num_users} になるはず): {np.sum(self.c_vector):.4f}")
 
     # _calculate_E_primeメソッドの実装
+
+    def _calculate_contribution_vector(self, E_prime_matrix: np.ndarray) -> np.ndarray:
+        """
+        貢献度計算用の行列E'から貢献度ベクトルcを計算する。
+        """
+
+        try:
+            eigenvalues, eigenvectors_as_columns = np.linalg.eig(
+                E_prime_matrix.T)  # 固有値と固有ベクトルを計算
+            real_
