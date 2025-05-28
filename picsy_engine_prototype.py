@@ -29,3 +29,10 @@ class PicsyUser:
 
 
 class PicsyEngine:
+    def __init__(self, user_ids: List[str], user_names: List[str], alpha_like: float, gamma_rate: float):
+        self.num_users: int = len(user_ids)
+        if self.num_users <= 1:
+            raise ValueError("ユーザー数が1以下です。ユーザー数は2以上である必要があります。")
+    # ユーザー情報を保持するためのリストを作成
+    self.user_ids: List[str] = user_ids
+    self.user_names: List[str] = user_names
