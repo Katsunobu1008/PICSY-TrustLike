@@ -36,3 +36,14 @@ class PicsyEngine:
     # ユーザー情報を保持するためのリストを作成
     self.user_ids: List[str] = user_ids
     self.user_names: List[str] = user_names
+   # ユーザーIDと行列インデックスのマッピングを作成（拡張性を考慮するよん）
+    self.user_id_to_index: Dict[str, int] = {
+        uid: i for i, uid in enumerate(user_ids)}
+    self.user_index_to_id: Dict[int, str] = {
+        i: uid for i, uid in enumerate(user_ids)}
+
+    self.alpha_like: float = alpha_like
+    self.gamma_rate: float = gamma_rate
+
+    # 評価行列E(N×N)
+    # 初期状態:各ユーザーの予算（E_ii）が1.0、他者評価（E_ij,j!i）が0.0
