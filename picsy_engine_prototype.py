@@ -48,6 +48,9 @@ class PicsyEngine:
     self.alpha_like: float = alpha_like
     self.gamma_rate: float = gamma_rate
 
+    self.max_iterations: int = max_iterations
+    self.tolerance: float = tolerance
+
     # 評価行列E(N×N)
     # 初期状態:各ユーザーの予算（E_ii）が1.0、他者評価（E_ij,j!i）が0.0
     self.Evaluations: np.ndarray = np.zeros(
@@ -114,10 +117,45 @@ class PicsyEngine:
 
     def _calculate_contribution_vector(self, E_prime_matrix: np.ndarray) -> np.ndarray:
         """
-        貢献度計算用の行列E'から貢献度ベクトルcを計算する。
+        貢献度計算用の行列E'から貢献度ベクトルcを反復計算（パワーメソッド）で計算する。
+        cはE'の固有値1に対する「左」固有ベクトルを正規化したものだよん。
         """
 
-        try:
-            eigenvalues, eigenvectors_as_columns = np.linalg.eig(
-                E_prime_matrix.T)  # 固有値と固有ベクトルを計算
-            real_
+        if E_prime_matrix.shape[0] != self.num_users or E_prime_matrix.shape[1] != self.num_users:
+            # これの意味は、E_prime_matrixのサイズがユーザー数と一致していないということ
+            raise ValueError(f"E'行列のサイズがユーザー数({self.num_users})と一致しません。")
+
+        #  1.初期貢献度ベクトルc＿kの設定
+        #    各ユーザーの貢献度を均等に1とし、合計がNになるようにする（PICSYの定義から。）
+        #    反復計算では、合計1で正規化して計算し、最後にN倍するアプローチを取る。PICSYの定義ではそう書いてある。たしか。
+        c_k = np.ones(self.num_users)
+
+        print(f"   反復計算開始（最大{self.max_iterations}回,許容誤差:{self.tolerance}）")
+        for iteration in range(self.max_iterations):
+            c_k_old = c_k.copy()  # 前回の計算結果を保存するための一時変数
+
+            # 2.反復計算式：c^(k+1)_unnormalized = c^(k) @ E'
+            c_k_unnormalized = c_k_old @ E_prime_matrix
+
+            # 3.正規化:合計がnum_usersになるようにする。
+            current_sum = np.sum(c_k_unnormalized)
+            if np.isclose(current_sum, 0):
+                print(f"   警告（Iter{iteration+1})：貢献度の合計が0に近いため、計算を中断します。")
+                # ゼロ除算を避けるため、エラーか初期値を返す。
+                return np.full(self.num_users, 1.0)
+
+            c_k = (self.num_users / current_sum)*c_k_unnormalized
+
+            # 4.収束判定
+            # 収束しているかどうかを判定するために、前回の計算結果との差を計算する。
+            diff = np.sum(np.abs(c_k - c_k_old))
+            if iteration % 10 == 0 or iteration == self.max_iterations - 1:  # 10回ごとと最後は状況表示
+                print(
+                    f"      Iter {iteration+1:3d}: diff = {diff:.2e}, c = {['{:.4f}'.format(x) for x in c_k]}")
+
+            if diff < self.tolerance:
+                print(f"    反復計算収束 (Iter {iteration+1}回, 差分 {diff:.2e})")
+                return c_k
+            print(f"警告: 最大反復回数 ({self.max_iterations}回) に到達しましたが、収束しませんでした。")
+            print(f"     最終差分: {diff:.2e}")
+            return c_k  # 収束しなくても、最終的な値を返す
