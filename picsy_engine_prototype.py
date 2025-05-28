@@ -58,3 +58,53 @@ class PicsyEngine:
     """
 
     # 貢献度計算用行列E'と貢献度ベクトルc（初期値はNone）
+    self.E_prime: np.ndarray = None
+    self.c: np.ndarray = None
+
+    print(f"PICSYエンジンを{self.num_users}人のユーザーで起動しました。")
+    self.display_E()
+    self.calculate_all_contributions()  # 初期貢献度を計算する
+
+    def _get_user_index(self, user_id: str) -> int:
+        """ユーザーIDから行列インデックスを取得する"""
+        if user_id not in self/user_id_to_index:
+            raise ValueError(f"ユーザーID{user_id}は存在しません。")
+        return self.user_id_to_index[user_id]
+
+    def display_E(self, title: str = "評価行列 E"):
+        """評価行列を表示する"""
+        print(f"\n--- {title} ---")
+        # ヘッダー(To : UserA,UserB,....)
+        header = "From    \\ To |"
+        for i in range(self.num_users):
+            header += f"{self.user_names[i]:^7} |"  # ユーザー名を7文字幅で中央揃え
+        print(header)
+        print("-" * (len(header)))
+
+        # 各行を表示
+        for i in range(self.num_users):
+            row_str = f"{self.user_names[i]:^7} |"  # ユーザー名を7文字幅で中央揃え
+            for j in range(self.num_users):
+                # ^7.2fというのは何かというと、7文字幅で小数点以下2桁まで表示するという意味
+                row_str += f"{self.Evaluations[i,j]:^7.2f} |"
+            print(row_str)
+
+    # 行和が1になっているか検証する
+    row_sums = np.sum(self.E, axis=1)
+    for i in range(self.num_users):
+        if not np.isclose(row_sums[i], 1.0):
+            # :{row_sums[i]:.4f}というのは、row_sums[i]を小数点以下4桁まで表示するという意味
+            print(f"警告:{self.user_names[i]}の行和が1ではありません。:{row_sums[i]:.4f}")
+
+    def display_c_vector(self, title: str = "貢献度ベクトル c"):
+        if self.c_vector is None:
+            print(f"\n--- {title} ---")
+            print("まだ計算されていません。")
+            return
+        print(f"\n--- {title} ---")
+        for i in range(self.num_users):
+            print(f"  {self.user_names[i]:<10}: {self.c_vector[i]:.4f}")
+        print(
+            f"  要素の合計 (N={self.num_users} になるはず): {np.sum(self.c_vector):.4f}")
+
+    # _calculate_E_primeメソッドの実装
