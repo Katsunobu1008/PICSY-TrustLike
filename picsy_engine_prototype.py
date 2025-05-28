@@ -47,3 +47,14 @@ class PicsyEngine:
 
     # 評価行列E(N×N)
     # 初期状態:各ユーザーの予算（E_ii）が1.0、他者評価（E_ij,j!i）が0.0
+    self.Evaluations: np.ndarray = np.zeros(
+        (self.num_users, self.numusers), dtype=float)
+    np.fill_diagonal(self.Evaluations, 1.0)
+    """
+    [1,0,0
+    0,1,0
+    0,0, 1]
+    みたいなことをするためのコード
+    """
+
+    # 貢献度計算用行列E'と貢献度ベクトルc（初期値はNone）
