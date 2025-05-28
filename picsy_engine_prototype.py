@@ -26,3 +26,6 @@ class PicsyUser:
 
     def __repr__(self) -> str:
         return f"PicsyUser(user_id={self.user_id}, username={self.username}, evals ={self.evaluations})"
+
+
+class PicsyEngine:
