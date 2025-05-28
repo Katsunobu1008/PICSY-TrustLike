@@ -43,7 +43,8 @@ class PicsyEngine:
         # 評価行列E(N×N)
         # 初期状態:各ユーザーの予算（E_ii）が1.0、他者評価（E_ij,j!=i）が0.0
         self.E: np.ndarray = np.zeros(  # 修正: 属性名を E に統一
-            (self.num_users, self.num_users), dtype=float)  # 修正: タイポ numusers -> num_users
+            # 修正: タイポ numusers -> num_users
+            (self.num_users, self.num_users), dtype=float)
         np.fill_diagonal(self.E, 1.0)
         """
         [1,0,0
@@ -86,7 +87,7 @@ class PicsyEngine:
             for j in range(self.num_users):
                 # ^7.4fというのは何かというと、7文字幅で小数点以下4桁まで表示するという意味 (修正: .2f -> .4f)
                 # 修正: self.Evaluations -> self.E
-                row_str += f"{self.E[i,j]:^7.4f} |"
+                row_str += f"{self.E[i, j]:^7.4f} |"
             print(row_str)
         print("-" * (len(header)))
 
@@ -180,3 +181,117 @@ class PicsyEngine:
         print(f"警告: 最大反復回数 ({self.max_iterations}回) に到達しましたが、収束しませんでした。")
         print(f"      最終差分: {diff:.3e}")
         return c_k  # 収束しなくても、最終的な値を返す
+
+    def calculate_all_contributions(self):
+        """
+        現在の評価行列 E に基づいて、全てのユーザーの貢献度 c を計算し、
+        self.E_prime と self.c_vector を更新する。
+        """
+        print("\n>>> 貢献度計算を開始します...")
+        self.E_prime = self._calculate_E_prime()
+        # print("   計算された E':") # デバッグ用に表示しても良い
+        # print(self.E_prime)
+        self.c_vector = self._calculate_contribution_vector(self.E_prime)
+
+        if np.any(np.isnan(self.c_vector)):
+            print("!!! 貢献度計算に失敗しました。以前の貢献度を維持します（もしあれば）。")
+        else:
+            print("貢献度計算が完了しました。")
+        self.display_c_vector()
+
+    # --- PICSY 動的ロジック ---
+    def perform_like(self, liker_user_id: str, liked_content_creator_id: str):
+        """
+        指定されたユーザー間で「いいね」による評価移転（取引）を実行する。
+        その後、貢献度を再計算する。
+        """
+        try:
+            liker_idx = self._get_user_index(liker_user_id)
+            liked_idx = self._get_user_index(liked_content_creator_id)
+
+            if liker_idx == liked_idx:
+                print(
+                    f"情報: {self.user_index_to_name[liker_idx]} は自分自身に「いいね」できません（評価移転なし）。")
+                return False  # 取引は行われなかった
+
+            print(
+                f"\n>>> {self.user_index_to_name[liker_idx]} が {self.user_index_to_name[liked_idx]} のコンテンツに「いいね」を実行中...")
+
+            if self.E[liker_idx, liker_idx] >= self.alpha_like:
+                # トランザクションの記録（将来の機能）
+                # self.transaction_log.append(...)
+                # print(f"  いいね前: {USER_NAMES[liker_idx]} 予算={self.E[liker_idx, liker_idx]:.4f}, {USER_NAMES[liker_idx]}->{USER_NAMES[liked_idx]}評価={self.E[liker_idx, liked_idx]:.4f}")
+
+                self.E[liker_idx, liker_idx] -= self.alpha_like  # 予算(E_ii)を減らす
+                # 対象者への評価(E_iS)を増やす
+                self.E[liker_idx, liked_idx] += self.alpha_like
+
+                # print(f"  いいね後: {USER_NAMES[liker_idx]} 予算={self.E[liker_idx, liker_idx]:.4f}, {USER_NAMES[liker_idx]}->{USER_NAMES[liked_idx]}評価={self.E[liker_idx, liked_idx]:.4f}")
+                print(f"  評価移転成功: {self.alpha_like:.2f} ポイント。")
+                self.display_E(
+                    f"「いいね」後の評価行列 E (by {self.user_index_to_name[liker_idx]})")
+
+                # 「いいね」の都度、貢献度を再計算
+                self.calculate_all_contributions()
+                return True  # 取引成功
+            else:
+                print(
+                    f"  評価移転失敗: {self.user_index_to_name[liker_idx]} の予算不足です。")
+                print(
+                    f"    (現在の予算: {self.E[liker_idx, liker_idx]:.4f}, 「いいね」に必要な評価量: {self.alpha_like:.2f})")
+                return False  # 取引失敗
+        except ValueError as e:
+            print(f"エラー: 「いいね」処理中に問題が発生しました - {e}")
+            return False
+
+    def perform_natural_recovery(self):
+        """
+        全ユーザーに対して自然回収を実行し、評価行列 E を更新する。
+        その後、貢献度を再計算する。
+        """
+        print(f"\n>>> 自然回収処理を実行中 (gamma = {self.gamma_rate})...")
+
+        # Eを直接変更するとループ内で問題が起きる可能性があるため、コピーを操作する
+        new_E = self.E.copy()
+        for i in range(self.num_users):
+            # 他者への評価 E_ij (j!=i) を減衰させる
+            for j in range(self.num_users):
+                if i == j:
+                    continue
+                new_E[i, j] = (1 - self.gamma_rate) * self.E[i, j]  # 元のEから計算
+
+            # 予算 E_ii を、行和が1になるように設定
+            # E_ii_new = 1.0 - sum(new_E[i,j] for j!=i)
+            # new_E[i,i]はまだ古い値なのでこれでOK
+            sum_others_new = np.sum(new_E[i, :]) - new_E[i, i]
+            new_E[i, i] = 1.0 - sum_others_new
+
+        self.E = new_E  # 計算後の行列で置き換え
+        print("自然回収処理が完了しました。")
+        self.display_E("自然回収後の評価行列 E")
+
+        # 自然回収後、貢献度を再計算
+        self.calculate_all_contributions()
+
+
+# --- メイン実行ブロック ---
+if __name__ == "__main__":
+    print("PICSY-TrustLike エンジンプロトタイプへようこそ！")
+
+    # ユーザー情報を定義 (PicsyUserオブジェクトのリストとして)
+    users_global = [
+        PicsyUser(user_id="u001", username="Alice"),
+        PicsyUser(user_id="u002", username="Bob"),
+        PicsyUser(user_id="u003", username="Charlie")
+    ]
+
+    # PicsyEngine のインスタンスを作成
+    engine = PicsyEngine(
+        user_list=users_global,  # PicsyUserオブジェクトのリストを渡す
+        alpha_like=ALPHA_LIKE,
+        gamma_rate=GAMMA_RATE,
+        max_iterations=200,
+        tolerance=1e-7
+    )
+
+    # --- シミュレーションシナリオ ---
