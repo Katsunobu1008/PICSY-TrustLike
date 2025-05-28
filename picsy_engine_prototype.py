@@ -295,3 +295,48 @@ if __name__ == "__main__":
     )
 
     # --- シミュレーションシナリオ ---
+ print("\n=== シミュレーション開始 ===")
+
+    # イベント1: Alice が Bob のコンテンツに「いいね」
+    print("\n--- イベント1: Alice (u001) が Bob (u002) に「いいね」 ---")
+    engine.perform_like(liker_user_id="u001", liked_content_creator_id="u002")
+
+    # イベント2: Alice (u001) が Charlie (u003) のコンテンツに「いいね」
+    print("\n--- イベント2: Alice (u001) が Charlie (u003) に「いいね」 ---")
+    engine.perform_like(liker_user_id="u001", liked_content_creator_id="u003")
+
+    # イベント3: Bob (u002) が Alice (u001) のコンテンツに「いいね」
+    print("\n--- イベント3: Bob (u002) が Alice (u001) に「いいね」 ---")
+    engine.perform_like(liker_user_id="u002", liked_content_creator_id="u001")
+
+    # イベント4: 自然回収の実行
+    print("\n--- イベント4: 自然回収の実行 ---")
+    engine.perform_natural_recovery()
+
+    # イベント5: Charlie (u003) が Alice (u001) に「いいね」を2回（予算が許す限り）
+    print("\n--- イベント5: Charlie (u003) が Alice (u001) に「いいね」 (1回目) ---")
+    engine.perform_like(liker_user_id="u003", liked_content_creator_id="u001")
+    print("\n--- イベント5: Charlie (u003) が Alice (u001) に「いいね」 (2回目) ---")
+    engine.perform_like(liker_user_id="u003", liked_content_creator_id="u001")
+
+    # --- 拡張性のデモンストレーション（ユーザー数を増やした場合） ---
+    print("\n\n=== 拡張性テスト: ユーザー数を増やして初期化 ===")
+    users_large_test = [
+        # 5ユーザーでテスト
+        PicsyUser(user_id=f"user{i:03d}", username=f"TestUser{i:03d}") for i in range(5)
+    ]
+    engine_large = PicsyEngine(
+        user_list=users_large_test,
+        alpha_like=ALPHA_LIKE,
+        gamma_rate=GAMMA_RATE,
+        max_iterations=50,  # 反復回数を少し減らしてテスト
+        tolerance=1e-6
+    )
+    # 簡単な操作を実行
+    engine_large.perform_like(liker_user_id="user000",
+                              liked_content_creator_id="user001")
+    engine_large.perform_like(liker_user_id="user000",
+                              liked_content_creator_id="user002")
+    engine_large.perform_natural_recovery()
+
+    print("\n=== シミュレーション終了 ===")
