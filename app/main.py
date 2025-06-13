@@ -1,6 +1,7 @@
 # app/main.py
 
 # FastAPIライブラリからFastAPIクラスをインポート
+from .routers import auth, users  # 作成したルーターをインポート
 from fastapi import FastAPI
 
 # --- データベース関連のインポート ---
@@ -28,7 +29,10 @@ app = FastAPI(
     description="PICSYモデルを応用した「いいね」ベースの評価貨幣システムAPI",
     version="0.1.0"
 )
+# --- APIルーターのインクルード ---
 
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
 
 # --- APIルーターのインクルード（将来のステップで追加） ---
 # 今後、機能ごと（認証、ユーザー、コンテンツなど）にファイルを分けてAPIを実装していきます。
