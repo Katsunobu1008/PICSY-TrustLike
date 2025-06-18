@@ -12,7 +12,7 @@ class Content(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True, nullable=False)
-    body = Column(Text, nullable=True)  # 本文は長くなる可能性があるのでText型
+    body = Column(Text, nullable=True)
 
     # 外部キー制約: usersテーブルのidカラムと関連付ける
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -22,5 +22,4 @@ class Content(Base):
                         server_default=func.now(), onupdate=func.now())
 
     # Userモデルとのリレーションシップ（関連付け）を定義
-    # "creator"という名前で、このContentオブジェクトから対応するUserオブジェクトにアクセスできるようになる
     creator = relationship("User", back_populates="contents")
