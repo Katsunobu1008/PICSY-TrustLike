@@ -2,8 +2,142 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PICSY-TrustLike - 新規投稿</title>
-    <link rel="stylesheet" href="style.css" />
+    <style>
+      /*
+         * この<style>タグは、このファイル単体でデザインを確認できるようにするために記述しています。
+         * 実際の開発では、前回のstyle.cssのように外部ファイルに分離するのが一般的です。
+        */
+
+      /* --- 全体・基本スタイル --- */
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+        background-color: #f0f2f5; /* 少し暖かみのある背景色 */
+        color: #1d2129; /* 基本的なテキスト色 */
+      }
+
+      /* --- ヘッダー --- */
+      header {
+        background-color: #ffffff;
+        padding: 10px 40px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      header .logo {
+        font-size: 1.6em;
+        font-weight: 700;
+        color: #333;
+      }
+      header nav a {
+        text-decoration: none;
+        color: #007bff;
+        margin-left: 25px;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      header nav a:hover {
+        color: #0056b3;
+      }
+      header .user-info {
+        font-size: 0.9em;
+        color: #555;
+      }
+
+      /* --- メインコンテンツエリア --- */
+      main {
+        max-width: 760px; /* Noteに近い、文章が読みやすい幅 */
+        margin: 40px auto; /* 上下のマージンを確保 */
+        padding: 20px;
+      }
+
+      /* --- 投稿フォームコンテナ --- */
+      .post-container {
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 30px 40px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 浮き上がって見えるように影を追加 */
+      }
+      .post-container h2 {
+        font-size: 2em;
+        margin-top: 0;
+        margin-bottom: 30px;
+        text-align: center;
+        color: #333;
+      }
+
+      /* --- フォームの各要素 --- */
+      .form-group {
+        margin-bottom: 25px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 1em;
+        color: #555;
+      }
+      .form-group input[type='text'],
+      .form-group textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1em;
+        line-height: 1.6;
+        box-sizing: border-box; /* paddingを含めてwidth 100%にする */
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .form-group input[type='text']:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #007bff; /* フォーカス時に枠線の色を変更 */
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); /* フォーカス時に影を追加 */
+      }
+      .form-group textarea {
+        min-height: 300px;
+        resize: vertical; /* 縦方向のみリサイズ可能に */
+      }
+
+      /* --- アクションボタンエリア --- */
+      .form-actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end; /* ボタンを右揃えに */
+      }
+      .form-actions button {
+        font-size: 1em;
+        font-weight: 600;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .form-actions .btn-primary {
+        background-color: #007bff;
+        color: white;
+      }
+      .form-actions .btn-primary:hover {
+        background-color: #0056b3;
+      }
+      .form-actions .btn-secondary {
+        background-color: #e9ecef;
+        color: #495057;
+      }
+      .form-actions .btn-secondary:hover {
+        background-color: #d3d9df;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -20,34 +154,40 @@
     </header>
 
     <main>
-      <div class="content-card">
+      <div class="post-container">
         <h2>新しいコンテンツを投稿</h2>
+
         <form action="index.html" method="get">
           <div class="form-group">
             <label for="title">タイトル</label>
-            <input type="text" id="title" name="title" required />
+            <input
+              type="text"
+              id="title"
+              name="title"
+              placeholder="魅力的なタイトルを入力"
+              required
+            />
           </div>
+
           <div class="form-group">
             <label for="body">本文</label>
-            <textarea id="body" name="body" required></textarea>
+            <textarea
+              id="body"
+              name="body"
+              placeholder="ここに本文を記述してください..."
+              required
+            ></textarea>
           </div>
-          <div
-            style="
-              text-align: right;
-              margin-top: 10px;
-              display: flex;
-              gap: 10px;
-              justify-content: flex-end;
-            "
-          >
+
+          <div class="form-actions">
             <button
               type="button"
-              class="secondary"
+              class="btn-secondary"
               onclick="window.location.href='index.html'"
             >
               キャンセル
             </button>
-            <button type="submit">投稿する</button>
+            <button type="submit" class="btn-primary">投稿する</button>
           </div>
         </form>
       </div>
