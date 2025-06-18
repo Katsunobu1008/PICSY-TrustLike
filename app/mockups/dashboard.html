@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PICSY-TrustLike - ダッシュボード</title>
+    <style>
+      /* 簡単なスタイリング（後でCSSファイルに分離） */
+      body {
+        font-family: sans-serif;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+      }
+      .panel {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 15px;
+      }
+      .panel-left {
+        width: 30%;
+      }
+      .panel-right {
+        width: 70%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .config-item {
+        margin-bottom: 10px;
+      }
+      .config-item label {
+        display: inline-block;
+        width: 150px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="panel panel-left">
+      <h3>システム制御</h3>
+      <hr />
+
+      <h4>初期設定</h4>
+      <div class="config-item">
+        <label for="population">人口 (N):</label>
+        <input type="number" id="population" value="10" readonly /> 人
+        <button>再初期化</button>
+      </div>
+      <div class="config-item">
+        <label for="max_alpha">最大取引額 (α_max):</label>
+        <input type="number" id="max_alpha" value="0.3" step="0.01" />
+      </div>
+      <div class="config-item">
+        <label for="gamma_rate">自然回収率 (γ):</label>
+        <input type="number" id="gamma_rate" value="0.01" step="0.001" />
+      </div>
+      <div class="config-item">
+        <label>貢献度計算タイミング:</label>
+        <span>毎フェーズ (朝, 昼, 晩)</span>
+      </div>
+      <button>設定を更新</button>
+
+      <hr style="margin-top: 20px" />
+
+      <h4>現在の状況</h4>
+      <p><strong>経過日数:</strong> 22 日目</p>
+      <p><strong>現在のフェーズ:</strong> 朝</p>
+      <p><strong>貢献度計算回数:</strong> 66 回</p>
+
+      <hr style="margin-top: 20px" />
+
+      <h4>シミュレーション制御</h4>
+      <button>次のフェーズへ進む</button>
+      <button>貢献度計算を実行</button>
+      <button>自然回収を実行</button>
+    </div>
+
+    <div class="panel panel-right">
+      <div class="panel">
+        <h4>ユーザー（アクター）一覧</h4>
+        <div style="max-height: 200px; overflow-y: auto">
+          <table>
+            <thead>
+              <tr>
+                <th>選択</th>
+                <th>ID</th>
+                <th>名前</th>
+                <th>貢献度</th>
+                <th>予算</th>
+                <th>購買力</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="radio" name="actor" /></td>
+                <td>u001</td>
+                <td>Alice</td>
+                <td>1.023</td>
+                <td>0.850</td>
+                <td>0.870</td>
+              </tr>
+              <tr>
+                <td><input type="radio" name="actor" /></td>
+                <td>u002</td>
+                <td>Bob</td>
+                <td>0.987</td>
+                <td>0.910</td>
+                <td>0.900</td>
+              </tr>
+              <tr>
+                <td><input type="radio" name="actor" /></td>
+                <td>u003</td>
+                <td>Charlie</td>
+                <td>1.150</td>
+                <td>0.750</td>
+                <td>0.863</td>
+              </tr>
+              <tr>
+                <td><input type="radio" name="actor" /></td>
+                <td>u004</td>
+                <td>Dave</td>
+                <td>0.840</td>
+                <td>0.950</td>
+                <td>0.798</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>評価行列 (E)</h4>
+        <div style="max-height: 200px; overflow-y: auto; font-size: 0.9em">
+          <table>
+            <thead>
+              <tr>
+                <th>From \ To</th>
+                <th>Alice</th>
+                <th>Bob</th>
+                <th>Charlie</th>
+                <th>Dave</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Alice</th>
+                <td>0.850</td>
+                <td>0.050</td>
+                <td>0.100</td>
+                <td>0.000</td>
+              </tr>
+              <tr>
+                <th>Bob</th>
+                <td>0.040</td>
+                <td>0.910</td>
+                <td>0.050</td>
+                <td>0.000</td>
+              </tr>
+              <tr>
+                <th>Charlie</th>
+                <td>0.150</td>
+                <td>0.050</td>
+                <td>0.750</td>
+                <td>0.050</td>
+              </tr>
+              <tr>
+                <th>Dave</th>
+                <td>0.025</td>
+                <td>0.025</td>
+                <td>0.000</td>
+                <td>0.950</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>選択したアクターの詳細 (Alice)</h4>
+        <p><strong>ID:</strong> u001</p>
+        <p><strong>名前:</strong> Alice</p>
+        <p><strong>貢献度:</strong> 1.023</p>
+        <p><strong>予算:</strong> 0.850</p>
+        <p><strong>購買力:</strong> 0.870</p>
+        <hr />
+        <h5>いいね履歴 (最新5件)</h5>
+        <ul>
+          <li>Bobの「新しいPICSYの論文考察」にいいね (α=0.05)</li>
+          <li>Charlieの「週末のイベント写真」にいいね (α=0.05)</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
