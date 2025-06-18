@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PICSY-TrustLike - 新規投稿</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">PICSY-TrustLike</div>
+      <nav>
+        <a href="index.html">タイムライン</a>
+        <a href="post_new.html">新規投稿</a>
+        <a href="dashboard.html">ダッシュボード</a>
+        <a href="profile.html">マイプロフィール</a>
+      </nav>
+      <div class="user-info">
+        <span>こんにちは、Aliceさん</span> | <a href="login.html">ログアウト</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="content-card">
+        <h2>新しいコンテンツを投稿</h2>
+        <form action="index.html" method="get">
+          <div class="form-group">
+            <label for="title">タイトル</label>
+            <input type="text" id="title" name="title" required />
+          </div>
+          <div class="form-group">
+            <label for="body">本文</label>
+            <textarea id="body" name="body" required></textarea>
+          </div>
+          <div
+            style="
+              text-align: right;
+              margin-top: 10px;
+              display: flex;
+              gap: 10px;
+              justify-content: flex-end;
+            "
+          >
+            <button
+              type="button"
+              class="secondary"
+              onclick="window.location.href='index.html'"
+            >
+              キャンセル
+            </button>
+            <button type="submit">投稿する</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>
